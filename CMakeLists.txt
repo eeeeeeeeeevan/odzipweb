@@ -53,8 +53,8 @@ else()
 endif()
 
 add_custom_target(run
-        COMMAND $<TARGET_FILE:odz> c input output.odz
-        COMMAND $<TARGET_FILE:odz> d output.odz roundtrip
+        COMMAND $<TARGET_FILE:odz> -f -v0 c input output.odz
+        COMMAND $<TARGET_FILE:odz> -f -v0 d output.odz roundtrip
         COMMAND ${CMAKE_COMMAND} -E compare_files input roundtrip
         DEPENDS odz
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
