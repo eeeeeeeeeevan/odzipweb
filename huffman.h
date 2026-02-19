@@ -51,8 +51,9 @@ void huff_build_decode_table(const uint8_t *lengths, int nsym,
  * Build a two-level decode table (9-bit primary + secondary overflow).
  * Primary table is stack-allocated inside the struct; secondary is heap-allocated.
  * Call huff_free_decode_table2 when done, or reuse by calling build again.
+ * Returns 0 on success, -1 on OOM.
  */
-void huff_build_decode_table2(const uint8_t *lengths, int nsym,
+int  huff_build_decode_table2(const uint8_t *lengths, int nsym,
                               huff_decode_table_t *t);
 void huff_free_decode_table2(huff_decode_table_t *t);
 
@@ -66,8 +67,9 @@ void huff_write_trees(bit_writer_t *bw,
 
 /*
  * Read lit/len + distance Huffman trees from the bitstream.
+ * Returns 0 on success, -1 on corrupt data.
  */
-void huff_read_trees(bit_reader_t *br,
+int  huff_read_trees(bit_reader_t *br,
                      uint8_t *ll_lens, int *n_ll,
                      uint8_t *d_lens, int *n_dist);
 

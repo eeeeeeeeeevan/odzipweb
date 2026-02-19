@@ -3,8 +3,18 @@
 #include <stdint.h>
 
 #include "odz.h"
+#include "libodzip.h"
 
-void die(const char *m) { fprintf(stderr, "odz: error: %s\n", m); exit(1); }
+const char *odz_strerror(int err) {
+    switch (err) {
+        case ODZ_OK:          return "success";
+        case ODZ_ERR_IO:      return "I/O error";
+        case ODZ_ERR_OOM:     return "out of memory";
+        case ODZ_ERR_FORMAT:  return "invalid format";
+        case ODZ_ERR_CORRUPT: return "corrupt data";
+        default:              return "unknown error";
+    }
+}
 
 void wr_u32le(uint8_t *dst, uint32_t x) {
 	dst[0]=x&0xFF; dst[1]=(x>>8)&0xFF; dst[2]=(x>>16)&0xFF; dst[3]=(x>>24)&0xFF;

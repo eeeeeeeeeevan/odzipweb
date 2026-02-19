@@ -16,14 +16,9 @@
 #define ODZ_BLOCK_HUFFMAN   1
 
 /* ── Utilities ─────────────────────────────────────────────── */
-void     die(const char *m);
 void     wr_u32le(uint8_t *dst, uint32_t x);
 uint32_t rd_u32le(const uint8_t *src);
 void     wr_u64le(uint8_t *dst, uint64_t x);
 uint64_t rd_u64le(const uint8_t *src);
-
-/* ── Streaming API ─────────────────────────────────────────── */
-void odz_compress(FILE *in, FILE *out);
-void odz_decompress(FILE *in, FILE *out);
 
 #endif

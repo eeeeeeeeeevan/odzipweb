@@ -13,10 +13,10 @@ typedef struct {
     int      nbits;     /* valid bits in accumulator */
 } bit_writer_t;
 
-void bw_init(bit_writer_t *w, size_t initial_cap);
+int  bw_init(bit_writer_t *w, size_t initial_cap);  /* 0=ok, -1=oom */
 void bw_free(bit_writer_t *w);
-void bw_write(bit_writer_t *w, uint32_t val, int nbits);   /* LSB-first */
-void bw_flush(bit_writer_t *w);                             /* pad to byte boundary */
+int  bw_write(bit_writer_t *w, uint32_t val, int nbits);  /* LSB-first, 0=ok, -1=oom */
+int  bw_flush(bit_writer_t *w);                            /* pad to byte, 0=ok, -1=oom */
 
 /* ── Memory-backed bit reader ──────────────────────────────── */
 typedef struct {

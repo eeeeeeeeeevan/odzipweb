@@ -1,17 +1,17 @@
 #include "bitstream.h"
-#include "odz.h"
 #include <stdlib.h>
 #include <string.h>
 
 /* ── Writer ────────────────────────────────────────────────── */
 
-void bw_init(bit_writer_t *w, size_t initial_cap) {
+int bw_init(bit_writer_t *w, size_t initial_cap) {
     w->buf = malloc(initial_cap);
-    if (!w->buf) die("oom");
+    if (!w->buf) return -1;
     w->cap = initial_cap;
     w->pos = 0;
     w->bits = 0;
     w->nbits = 0;
+    return 0;
 }
 
 void bw_free(bit_writer_t *w) {
@@ -20,32 +20,35 @@ void bw_free(bit_writer_t *w) {
     w->cap = w->pos = 0;
 }
 
-static void bw_grow(bit_writer_t *w, size_t need) {
+static int bw_grow(bit_writer_t *w, size_t need) {
     while (w->pos + need >= w->cap) {
         w->cap = w->cap * 2 + 1024;
         w->buf = realloc(w->buf, w->cap);
-        if (!w->buf) die("oom");
+        if (!w->buf) return -1;
     }
+    return 0;
 }
 
-void bw_write(bit_writer_t *w, uint32_t val, int nbits) {
+int bw_write(bit_writer_t *w, uint32_t val, int nbits) {
     w->bits |= (uint64_t)val << w->nbits;
     w->nbits += nbits;
     while (w->nbits >= 8) {
-        bw_grow(w, 1);
+        if (bw_grow(w, 1) != 0) return -1;
         w->buf[w->pos++] = (uint8_t)(w->bits & 0xFF);
         w->bits >>= 8;
         w->nbits -= 8;
     }
+    return 0;
 }
 
-void bw_flush(bit_writer_t *w) {
+int bw_flush(bit_writer_t *w) {
     if (w->nbits > 0) {
-        bw_grow(w, 1);
+        if (bw_grow(w, 1) != 0) return -1;
         w->buf[w->pos++] = (uint8_t)(w->bits & 0xFF);
         w->bits = 0;
         w->nbits = 0;
     }
+    return 0;
 }
 
 /* ── Reader ────────────────────────────────────────────────── */

@@ -4,14 +4,22 @@ CC      := gcc
 CFLAGS  := -std=c17 -O2 -Wall -Wextra -pedantic -march=native -flto
 LDFLAGS := -flto
 TARGET  := odz
-SRC     := main.c
+
+LIB_SRC := odz_util.c bitstream.c huffman.c lz_hashchain.c compress.c decompress.c
+LIB_OBJ := $(LIB_SRC:.c=.o)
 
 .PHONY: all clean run
 
-all: $(TARGET)
+all: libodzip.a $(TARGET)
 
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) compress.c decompress.c lz_hashchain.c odz_util.c
+%.o: %.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+libodzip.a: $(LIB_OBJ)
+	$(AR) rcs $@ $^
+
+$(TARGET): main.o libodzip.a
+	$(CC) $(CFLAGS) -o $@ main.o -L. -lodzip $(LDFLAGS)
 
 run: $(TARGET)
 	./$(TARGET) c LICENSE output.odz
@@ -19,4 +27,4 @@ run: $(TARGET)
 	cmp LICENSE roundtrip
 
 clean:
-	$(RM) $(TARGET) *.o output.odz roundtrip
+	$(RM) $(TARGET) *.o *.a output.odz roundtrip

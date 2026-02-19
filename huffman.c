@@ -1,5 +1,4 @@
 #include "huffman.h"
-#include "odz.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -176,7 +175,7 @@ void huff_build_decode_table(const uint8_t *lengths, int nsym,
 
 /* ── Two-level decode table (9-bit primary + overflow) ─────── */
 
-void huff_build_decode_table2(const uint8_t *lengths, int nsym,
+int huff_build_decode_table2(const uint8_t *lengths, int nsym,
                               huff_decode_table_t *t) {
     const int pbits = HUFF_PRIMARY_BITS;
     const int psize = 1 << pbits;
@@ -212,7 +211,7 @@ void huff_build_decode_table2(const uint8_t *lengths, int nsym,
     /* If no codes exceed primary bits, no secondary needed */
     if (max_len <= pbits) {
         t->secondary_size = 0;
-        return;
+        return 0;
     }
 
     /* Second pass: build secondary sub-tables for codes > pbits.
@@ -253,7 +252,7 @@ void huff_build_decode_table2(const uint8_t *lengths, int nsym,
     if (sec_total > t->secondary_cap) {
         free(t->secondary);
         t->secondary = malloc((size_t)sec_total * sizeof(huff_entry_t));
-        if (!t->secondary) die("oom");
+        if (!t->secondary) return -1;
         t->secondary_cap = sec_total;
     }
     t->secondary_size = sec_total;
@@ -289,6 +288,7 @@ void huff_build_decode_table2(const uint8_t *lengths, int nsym,
         t->primary[p].sym = (uint16_t)prefix_offset[p];
         t->primary[p].len = (uint16_t)((prefix_sub_bits[p] + pbits) | 0x8000);
     }
+    return 0;
 }
 
 void huff_free_decode_table2(huff_decode_table_t *t) {
@@ -403,7 +403,7 @@ void huff_write_trees(bit_writer_t *bw,
     }
 }
 
-void huff_read_trees(bit_reader_t *br,
+int huff_read_trees(bit_reader_t *br,
                      uint8_t *ll_lens, int *n_ll,
                      uint8_t *d_lens, int *n_dist) {
     int hlit  = (int)br_read(br, 5) + 257;
@@ -431,7 +431,7 @@ void huff_read_trees(bit_reader_t *br,
         if (sym < 16) {
             combined[i++] = (uint8_t)sym;
         } else if (sym == 16) {
-            if (i == 0) die("code-length 16 with no previous");
+            if (i == 0) return -1;
             int run = (int)br_read(br, 2) + 3;
             uint8_t prev = combined[i - 1];
             for (int j = 0; j < run && i < total; j++) combined[i++] = prev;
@@ -442,7 +442,7 @@ void huff_read_trees(bit_reader_t *br,
             int run = (int)br_read(br, 7) + 11;
             for (int j = 0; j < run && i < total; j++) combined[i++] = 0;
         } else {
-            die("bad code-length symbol");
+            return -1;
         }
     }
 
@@ -453,4 +453,5 @@ void huff_read_trees(bit_reader_t *br,
 
     *n_ll = hlit;
     *n_dist = hdist;
+    return 0;
 }
