@@ -1,0 +1,1 @@
+get emscripten, then compile with chmod +x build.sh && ./build.sh 

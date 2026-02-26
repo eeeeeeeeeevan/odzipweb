@@ -1,0 +1,48 @@
+<html>
+<head>
+  <title>webodz</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header>
+    <h1>webodz</h1>
+  </header>
+
+  <div id="drop" class="off">
+    drop a file or click to select<br>
+    alternatively, drop a compressed file and it'll decompress
+    <input type="file" id="fi">
+  </div>
+
+  <div id="status"><span id="st">wasming...</span></div>
+
+  <div id="proc">
+    <span id="pt">compressing, wait</span>
+    <div id="bar"><span></span></div>
+  </div>
+
+  <div id="err"></div>
+
+  <div id="res">
+    <div class="rh"><b id="op">compress</b><i id="tm"></i></div>
+    <div class="st">
+      <div class="s"><small>input</small><span id="si"></span></div>
+      <div class="s"><small>output</small><span id="so"></span></div>
+      <div class="s"><small>comp. ratio</small><span id="sr"></span></div>
+    </div>
+    <div class="ra">
+      <button class="p" id="dl">download</button>
+      <button id="rst">reset</button>
+    </div>
+  </div>
+
+
+  <script src="odz.js"></script>
+  <script type="module">
+import o from"./odzip.js";const a=n=>document.getElementById(n);let p,f,i;(async()=>{try{p=await o();a("st").textContent="ready"}catch(n){a("st").textContent="failed to load wasm";u(n.message);return}a("drop").classList.remove("off")})();a("drop").onclick=()=>a("fi").click();a("fi").onchange=()=>{if(a("fi").files[0])s(a("fi").files[0])};a("drop").ondragover=n=>{n.preventDefault()};a("drop").ondrop=n=>{n.preventDefault();if(n.dataTransfer.files[0])s(n.dataTransfer.files[0])};async function s(n){m();a("res").classList.remove("on");const o=n.name.toLowerCase().endsWith(".odz");a("pt").textContent=(o?"decompressing":"compressing")+"...";a("proc").classList.add("on");a("drop").classList.add("off");try{const r=new Uint8Array(await n.arrayBuffer());const c=performance.now();const e=o?p.decompress(r):p.compress(r);const t=performance.now()-c;i=o?n.name.replace(/\.odz$/i,"")||"decompressed":n.name+".odz";f=new Blob([e]);d(o?"decompress":"compress",r.length,e.length,t)}catch(s){u(s.message||"unknown error")}finally{a("proc").classList.remove("on");a("drop").classList.remove("off");a("fi").value=""}}function e(n){if(n<1024)return n+"<span class=u>B</span>";if(n<1048576)return(n/1024).toFixed(1)+"<span class=u>KB</span>";return(n/1048576).toFixed(2)+"<span class=u>MB</span>"}function d(n,o,s,r){a("op").textContent=n;a("si").innerHTML=e(o);a("so").innerHTML=e(s);const c=n==="compress"?(s/o*100).toFixed(1):(o/s*100).toFixed(1);a("sr").innerHTML=c+"<span class=u>%</span>";a("tm").textContent=r<1e3?r.toFixed(0)+" ms":(r/1e3).toFixed(2)+" s";a("res").classList.add("on")}function u(n){a("err").textContent=n;a("err").classList.add("on")}function m(){a("err").classList.remove("on")}a("dl").onclick=()=>{if(!f)return;const n=document.createElement("a");n.href=URL.createObjectURL(f);n.download=i;n.click();URL.revokeObjectURL(n.href)};a("rst").onclick=()=>{a("res").classList.remove("on");m();f=null;i=""};
+</script>
+</body>
+
+</html>
