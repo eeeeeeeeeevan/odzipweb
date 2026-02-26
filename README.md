@@ -1,5 +1,5 @@
 # ODZip Alpha
-Minimal file compression. 
+Minimal file compression, ported to the web.
 
 Archives & encryption coming soon.
 
